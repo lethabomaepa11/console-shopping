@@ -103,6 +103,8 @@ public sealed class ShoppingApplication
 
     private void CustomerMenu(Customer customer)
     {
+        EnsureCustomer(customer);
+
         while (true)
         {
             Console.Clear();
@@ -163,6 +165,8 @@ public sealed class ShoppingApplication
 
     private void AdminMenu(Administrator admin)
     {
+        EnsureAdministrator(admin);
+
         while (true)
         {
             Console.Clear();
@@ -181,31 +185,31 @@ public sealed class ShoppingApplication
             switch (Input.ReadInt("Select option: ", 1, 10))
             {
                 case 1:
-                    AddProduct();
+                    AddProduct(admin);
                     break;
                 case 2:
-                    UpdateProduct();
+                    UpdateProduct(admin);
                     break;
                 case 3:
-                    DeleteProduct();
+                    DeleteProduct(admin);
                     break;
                 case 4:
-                    RestockProduct();
+                    RestockProduct(admin);
                     break;
                 case 5:
                     BrowseProducts();
                     break;
                 case 6:
-                    ViewAllOrders();
+                    ViewAllOrders(admin);
                     break;
                 case 7:
-                    UpdateOrderStatus();
+                    UpdateOrderStatus(admin);
                     break;
                 case 8:
-                    ViewLowStock();
+                    ViewLowStock(admin);
                     break;
                 case 9:
-                    ShowReports();
+                    ShowReports(admin);
                     break;
                 case 10:
                     return;
@@ -217,7 +221,7 @@ public sealed class ShoppingApplication
     {
         Console.Clear();
         Console.WriteLine("=== Product Catalog ===");
-        PrintProducts(_catalogService.GetAvailableProducts());
+        PrintProductList(_catalogService.GetAvailableProducts());
         Pause();
     }
 
@@ -227,15 +231,17 @@ public sealed class ShoppingApplication
         var keyword = Input.ReadRequired("Search keyword: ");
         var products = _catalogService.SearchProducts(keyword);
         Console.WriteLine("=== Search Results ===");
-        PrintProducts(products);
+        PrintProductList(products);
         Pause();
     }
 
     private void AddToCart(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         var products = _catalogService.GetAvailableProducts();
-        PrintProducts(products);
+        Console.WriteLine("=== Add Product to Cart ===");
+        PrintProductList(products);
 
         if (!products.Any())
         {
@@ -243,12 +249,12 @@ public sealed class ShoppingApplication
             return;
         }
 
-        var productId = Input.ReadGuid("Product ID: ");
+        var selected = SelectProduct(products, "Select product number: ");
         var quantity = Input.ReadInt("Quantity: ", 1, 1000);
 
         try
         {
-            _cartService.AddToCart(customer.Id, productId, quantity);
+            _cartService.AddToCart(customer.Id, selected.Id, quantity);
             PrintSuccess("Product added to cart.");
         }
         catch (DomainException ex)
@@ -259,6 +265,7 @@ public sealed class ShoppingApplication
 
     private void ViewCart(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Cart ===");
         var details = _cartService.GetCartDetails(customer.Id);
@@ -268,25 +275,44 @@ public sealed class ShoppingApplication
         }
         else
         {
-            foreach (var item in details.Items)
+            for (var i = 0; i < details.Items.Count; i++)
             {
-                Console.WriteLine($"{item.ProductId} | {item.ProductName} | Qty: {item.Quantity} | Unit: {item.UnitPrice:C2} | Line: {item.LineTotal:C2}");
+                var item = details.Items[i];
+                Console.WriteLine($"{i + 1}. {item.ProductName} | Qty: {item.Quantity} | Unit: {item.UnitPrice:C2} | Line: {item.LineTotal:C2}");
             }
+
             Console.WriteLine($"Total: {details.Total:C2}");
         }
+
         Pause();
     }
 
     private void UpdateCart(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
-        ViewCart(customer);
-        var productId = Input.ReadGuid("Product ID to update: ");
+        Console.WriteLine("=== Update Cart ===");
+        var details = _cartService.GetCartDetails(customer.Id);
+        if (!details.Items.Any())
+        {
+            Console.WriteLine("Cart is empty.");
+            Pause();
+            return;
+        }
+
+        for (var i = 0; i < details.Items.Count; i++)
+        {
+            var item = details.Items[i];
+            Console.WriteLine($"{i + 1}. {item.ProductName} | Qty: {item.Quantity} | Unit: {item.UnitPrice:C2} | Line: {item.LineTotal:C2}");
+        }
+
+        var selectedIndex = Input.ReadInt("Select item number: ", 1, details.Items.Count) - 1;
+        var selected = details.Items[selectedIndex];
         var quantity = Input.ReadInt("New quantity (0 removes): ", 0, 1000);
 
         try
         {
-            _cartService.UpdateQuantity(customer.Id, productId, quantity);
+            _cartService.UpdateQuantity(customer.Id, selected.ProductId, quantity);
             PrintSuccess("Cart updated.");
         }
         catch (DomainException ex)
@@ -297,11 +323,12 @@ public sealed class ShoppingApplication
 
     private void Checkout(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         try
         {
             var order = _orderService.Checkout(customer.Id);
-            PrintSuccess($"Checkout successful. Order ID: {order.Id} | Total: {order.TotalAmount:C2}");
+            PrintSuccess($"Checkout successful. Total: {order.TotalAmount:C2}");
         }
         catch (DomainException ex)
         {
@@ -311,6 +338,7 @@ public sealed class ShoppingApplication
 
     private void AddFunds(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         var amount = Input.ReadDecimal("Amount to add: ", 1m, 1_000_000m);
         customer.WalletBalance += amount;
@@ -320,54 +348,50 @@ public sealed class ShoppingApplication
 
     private void ViewOrderHistory(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Order History ===");
-        var orders = _orderService.GetCustomerOrders(customer.Id);
-        PrintOrders(orders);
+        PrintOrderList(_orderService.GetCustomerOrders(customer.Id));
         Pause();
     }
 
     private void TrackOrders(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Track Orders ===");
         var orders = _orderService.GetCustomerOrders(customer.Id);
-        PrintOrders(orders);
+        PrintOrderList(orders);
         if (!orders.Any())
         {
             Pause();
             return;
         }
 
-        var orderId = Input.ReadGuid("Order ID: ");
-        var order = orders.FirstOrDefault(o => o.Id == orderId);
-        if (order is null)
-        {
-            PrintError("Order not found.");
-            return;
-        }
-
-        PrintInfo($"Order {order.Id} Status: {order.Status}");
+        var selectedOrder = SelectOrder(orders, "Select order number: ");
+        PrintInfo($"Order status: {selectedOrder.Status}");
     }
 
     private void ReviewProduct(Customer customer)
     {
+        EnsureCustomer(customer);
         Console.Clear();
         var products = _catalogService.GetAvailableProducts();
-        PrintProducts(products);
+        Console.WriteLine("=== Review Products ===");
+        PrintProductList(products);
         if (!products.Any())
         {
             Pause();
             return;
         }
 
-        var productId = Input.ReadGuid("Product ID: ");
+        var selected = SelectProduct(products, "Select product number: ");
         var rating = Input.ReadInt("Rating (1-5): ", 1, 5);
         var comment = Input.ReadRequired("Comment: ");
 
         try
         {
-            _reviewService.AddReview(customer.Id, productId, rating, comment);
+            _reviewService.AddReview(customer.Id, selected.Id, rating, comment);
             PrintSuccess("Review submitted.");
         }
         catch (DomainException ex)
@@ -376,8 +400,9 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void AddProduct()
+    private void AddProduct(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
         var name = Input.ReadRequired("Name: ");
         var description = Input.ReadRequired("Description: ");
@@ -387,8 +412,8 @@ public sealed class ShoppingApplication
 
         try
         {
-            var product = _catalogService.AddProduct(name, description, category, price, stock);
-            PrintSuccess($"Product added. ID: {product.Id}");
+            _catalogService.AddProduct(name, description, category, price, stock);
+            PrintSuccess("Product added.");
         }
         catch (DomainException ex)
         {
@@ -396,11 +421,20 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void UpdateProduct()
+    private void UpdateProduct(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
-        PrintProducts(_catalogService.GetAllProducts());
-        var id = Input.ReadGuid("Product ID: ");
+        var products = _catalogService.GetAllProducts();
+        Console.WriteLine("=== Update Product ===");
+        PrintProductList(products);
+        if (!products.Any())
+        {
+            Pause();
+            return;
+        }
+
+        var selected = SelectProduct(products, "Select product number: ");
         var name = Input.ReadRequired("New Name: ");
         var description = Input.ReadRequired("New Description: ");
         var category = Input.ReadRequired("New Category: ");
@@ -408,7 +442,7 @@ public sealed class ShoppingApplication
 
         try
         {
-            _catalogService.UpdateProduct(id, name, description, category, price);
+            _catalogService.UpdateProduct(selected.Id, name, description, category, price);
             PrintSuccess("Product updated.");
         }
         catch (DomainException ex)
@@ -417,14 +451,23 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void DeleteProduct()
+    private void DeleteProduct(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
-        PrintProducts(_catalogService.GetAllProducts());
-        var id = Input.ReadGuid("Product ID: ");
+        var products = _catalogService.GetAllProducts();
+        Console.WriteLine("=== Delete Product ===");
+        PrintProductList(products);
+        if (!products.Any())
+        {
+            Pause();
+            return;
+        }
+
+        var selected = SelectProduct(products, "Select product number: ");
         try
         {
-            _catalogService.DeleteProduct(id);
+            _catalogService.DeleteProduct(selected.Id);
             PrintSuccess("Product deleted.");
         }
         catch (DomainException ex)
@@ -433,15 +476,24 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void RestockProduct()
+    private void RestockProduct(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
-        PrintProducts(_catalogService.GetAllProducts());
-        var id = Input.ReadGuid("Product ID: ");
+        var products = _catalogService.GetAllProducts();
+        Console.WriteLine("=== Restock Product ===");
+        PrintProductList(products);
+        if (!products.Any())
+        {
+            Pause();
+            return;
+        }
+
+        var selected = SelectProduct(products, "Select product number: ");
         var quantity = Input.ReadInt("Quantity to add: ", 1, 1_000_000);
         try
         {
-            _catalogService.RestockProduct(id, quantity);
+            _catalogService.RestockProduct(selected.Id, quantity);
             PrintSuccess("Stock updated.");
         }
         catch (DomainException ex)
@@ -450,19 +502,30 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void ViewAllOrders()
+    private void ViewAllOrders(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
         Console.WriteLine("=== All Orders ===");
-        PrintOrders(_orderService.GetAllOrders());
+        PrintOrderList(_orderService.GetAllOrders());
         Pause();
     }
 
-    private void UpdateOrderStatus()
+    private void UpdateOrderStatus(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
-        PrintOrders(_orderService.GetAllOrders());
-        var id = Input.ReadGuid("Order ID: ");
+        var orders = _orderService.GetAllOrders();
+        Console.WriteLine("=== Update Order Status ===");
+        PrintOrderList(orders);
+        if (!orders.Any())
+        {
+            Pause();
+            return;
+        }
+
+        var selectedOrder = SelectOrder(orders, "Select order number: ");
+
         Console.WriteLine("1. Pending");
         Console.WriteLine("2. Paid");
         Console.WriteLine("3. Processing");
@@ -474,7 +537,7 @@ public sealed class ShoppingApplication
 
         try
         {
-            _orderService.UpdateOrderStatus(id, status);
+            _orderService.UpdateOrderStatus(selectedOrder.Id, status);
             PrintSuccess("Order status updated.");
         }
         catch (DomainException ex)
@@ -483,16 +546,18 @@ public sealed class ShoppingApplication
         }
     }
 
-    private void ViewLowStock()
+    private void ViewLowStock(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
         Console.WriteLine("=== Low Stock Products ===");
-        PrintProducts(_reportService.GetLowStockProducts(5));
+        PrintProductList(_reportService.GetLowStockProducts(5));
         Pause();
     }
 
-    private void ShowReports()
+    private void ShowReports(Administrator admin)
     {
+        EnsureAdministrator(admin);
         Console.Clear();
         var report = _reportService.GenerateSalesReport();
         Console.WriteLine("=== Sales Report ===");
@@ -505,37 +570,66 @@ public sealed class ShoppingApplication
         {
             Console.WriteLine($"- {item.ProductName}: {item.QuantitySold} units");
         }
+
         Pause();
     }
 
-    private void PrintProducts(IEnumerable<Product> products)
+    private void PrintProductList(IReadOnlyList<Product> products)
     {
-        var list = products.ToList();
-        if (!list.Any())
+        if (!products.Any())
         {
             Console.WriteLine("No products found.");
             return;
         }
 
-        foreach (var product in list)
+        for (var i = 0; i < products.Count; i++)
         {
+            var product = products[i];
             var avgRating = _reviewService.GetAverageRating(product.Id);
-            Console.WriteLine($"{product.Id} | {product.Name} | {product.Category} | {product.Price:C2} | Stock: {product.StockQuantity} | Rating: {avgRating:F1}");
+            Console.WriteLine($"{i + 1}. {product.Name} | {product.Category} | {product.Price:C2} | Stock: {product.StockQuantity} | Rating: {avgRating:F1}");
         }
     }
 
-    private static void PrintOrders(IEnumerable<Order> orders)
+    private static void PrintOrderList(IReadOnlyList<Order> orders)
     {
-        var list = orders.ToList();
-        if (!list.Any())
+        if (!orders.Any())
         {
             Console.WriteLine("No orders found.");
             return;
         }
 
-        foreach (var order in list)
+        for (var i = 0; i < orders.Count; i++)
         {
-            Console.WriteLine($"{order.Id} | Customer: {order.CustomerId} | Total: {order.TotalAmount:C2} | Status: {order.Status} | Date: {order.CreatedAt:u}");
+            var order = orders[i];
+            Console.WriteLine($"{i + 1}. {order.CreatedAt:u} | Total: {order.TotalAmount:C2} | Status: {order.Status}");
+        }
+    }
+
+    private static Product SelectProduct(IReadOnlyList<Product> products, string prompt)
+    {
+        var index = Input.ReadInt(prompt, 1, products.Count) - 1;
+        return products[index];
+    }
+
+    private static Order SelectOrder(IReadOnlyList<Order> orders, string prompt)
+    {
+        var index = Input.ReadInt(prompt, 1, orders.Count) - 1;
+        return orders[index];
+    }
+
+    private static void EnsureCustomer(User user)
+    {
+        if (user.Role != UserRole.Customer)
+        {
+            throw new DomainException("Access denied. Customer role required.");
+        }
+    }
+
+    private static void EnsureAdministrator(User user)
+    {
+        if (user.Role != UserRole.Administrator)
+        {
+            throw new DomainException("Access denied. Administrator role required.");
         }
     }
 
