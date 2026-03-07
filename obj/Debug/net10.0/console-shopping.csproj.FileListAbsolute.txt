@@ -1,0 +1,14 @@
+C:\Users\USER\Desktop\projects\console-shopping\bin\Debug\net10.0\console-shopping.exe
+C:\Users\USER\Desktop\projects\console-shopping\bin\Debug\net10.0\console-shopping.deps.json
+C:\Users\USER\Desktop\projects\console-shopping\bin\Debug\net10.0\console-shopping.runtimeconfig.json
+C:\Users\USER\Desktop\projects\console-shopping\bin\Debug\net10.0\console-shopping.dll
+C:\Users\USER\Desktop\projects\console-shopping\bin\Debug\net10.0\console-shopping.pdb
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.AssemblyInfoInputs.cache
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.AssemblyInfo.cs
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.csproj.CoreCompileInputs.cache
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.dll
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\refint\console-shopping.dll
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.pdb
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\console-shopping.genruntimeconfig.cache
+C:\Users\USER\Desktop\projects\console-shopping\obj\Debug\net10.0\ref\console-shopping.dll
