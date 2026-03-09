@@ -1,4 +1,5 @@
 using ConsoleShoppingApp.App;
+using ConsoleShoppingApp.Domain.Models;
 using ConsoleShoppingApp.Domain;
 
 namespace ConsoleShoppingApp.Tests;

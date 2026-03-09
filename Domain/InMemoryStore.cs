@@ -1,3 +1,5 @@
+using ConsoleShoppingApp.Domain.Models;
+
 namespace ConsoleShoppingApp.Domain;
 
 public sealed class InMemoryStore

@@ -1,4 +1,5 @@
 using ConsoleShoppingApp.App.Menus;
+using ConsoleShoppingApp.Domain.Models;
 using ConsoleShoppingApp.Domain;
 using ConsoleShoppingApp.Services;
 

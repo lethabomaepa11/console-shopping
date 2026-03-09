@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ConsoleShoppingApp.Domain.Models;
 using ConsoleShoppingApp.Domain;
 
 namespace ConsoleShoppingApp.Services;

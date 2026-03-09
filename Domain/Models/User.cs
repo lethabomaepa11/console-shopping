@@ -1,4 +1,4 @@
-namespace ConsoleShoppingApp.Domain;
+namespace ConsoleShoppingApp.Domain.Models;
 
 public abstract class User
 {
