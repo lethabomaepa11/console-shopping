@@ -39,9 +39,9 @@ public class OrderObserverTests
         var order = new Order(Guid.NewGuid(), new List<OrderItem>(), 100m);
         orderRepo.Add(order);
 
-        orderService.UpdateOrderStatus(order.Id, OrderStatus.Shipped);
+        orderService.UpdateOrderStatus(order.Id, OrderStatus.Paid);
 
-        TestAssert.Equal(OrderStatus.Shipped, order.Status, "Order status should be updated.");
+        TestAssert.Equal(OrderStatus.Paid, order.Status, "Order status should be updated.");
         TestAssert.Equal(1, observer.CallCount, "Observer should be called once.");
         TestAssert.Equal(order.Id, observer.NotifiedOrder?.Id, "Observer should be notified with the correct order.");
 

@@ -16,16 +16,98 @@ public sealed class ConsoleView
 
     public TSelection ShowMenu<TSelection>(MenuDefinition<TSelection> menu) where TSelection : struct, Enum
     {
-        Console.Clear();
-        Console.WriteLine(menu.Title);
-
-        menu.Options
-            .Select(option => $"{option.Number}. {option.Label}")
-            .ToList()
-            .ForEach(Console.WriteLine);
-
-        var selectedIndex = Input.ReadInt(menu.Prompt, 1, menu.Options.Count) - 1;
+        var selectedIndex = ReadMenuSelection(menu);
         return menu.Options[selectedIndex].Selection;
+    }
+
+    private static int ReadMenuSelection<TSelection>(MenuDefinition<TSelection> menu) where TSelection : struct, Enum
+    {
+        var selectedIndex = 0;
+        var numberBuffer = string.Empty;
+
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine(menu.Title);
+            Console.WriteLine("Use Up/Down arrows + Enter, or type a number.");
+            Console.WriteLine();
+
+            for (var index = 0; index < menu.Options.Count; index++)
+            {
+                var option = menu.Options[index];
+                var marker = index == selectedIndex ? ">" : " ";
+                if (index == selectedIndex)
+                {
+                    var previousForeground = Console.ForegroundColor;
+                    var previousBackground = Console.BackgroundColor;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.BackgroundColor = ConsoleColor.White;
+                    Console.WriteLine($"{marker} {option.Number}. {option.Label}");
+                    Console.ForegroundColor = previousForeground;
+                    Console.BackgroundColor = previousBackground;
+                }
+                else
+                {
+                    Console.WriteLine($"{marker} {option.Number}. {option.Label}");
+                }
+            }
+
+            if (numberBuffer.Length > 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"{menu.Prompt}{numberBuffer}");
+            }
+
+            var keyInfo = Console.ReadKey(intercept: true);
+
+            if (keyInfo.Key == ConsoleKey.UpArrow)
+            {
+                selectedIndex = selectedIndex == 0 ? menu.Options.Count - 1 : selectedIndex - 1;
+                numberBuffer = string.Empty;
+                continue;
+            }
+
+            if (keyInfo.Key == ConsoleKey.DownArrow)
+            {
+                selectedIndex = selectedIndex == menu.Options.Count - 1 ? 0 : selectedIndex + 1;
+                numberBuffer = string.Empty;
+                continue;
+            }
+
+            if (keyInfo.Key == ConsoleKey.Enter)
+            {
+                if (numberBuffer.Length == 0)
+                {
+                    return selectedIndex;
+                }
+
+                if (int.TryParse(numberBuffer, out var typedSelection)
+                    && typedSelection >= 1
+                    && typedSelection <= menu.Options.Count)
+                {
+                    return typedSelection - 1;
+                }
+
+                numberBuffer = string.Empty;
+                continue;
+            }
+
+            if (keyInfo.Key == ConsoleKey.Backspace)
+            {
+                if (numberBuffer.Length > 0)
+                {
+                    numberBuffer = numberBuffer[..^1];
+                }
+
+                continue;
+            }
+
+            if (char.IsDigit(keyInfo.KeyChar))
+            {
+                numberBuffer += keyInfo.KeyChar;
+                continue;
+            }
+        }
     }
 
     public void PrintProductList(IReadOnlyList<Product> products)

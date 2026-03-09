@@ -9,6 +9,7 @@ internal static class Program
             ApplicationMenusTests.Run();
             AccessGuardTests.Run();
             OrderObserverTests.Run();
+            OrderStateTransitionTests.Run();
             Console.WriteLine("All tests passed.");
             return 0;
         }

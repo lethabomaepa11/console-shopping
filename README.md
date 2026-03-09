@@ -6,6 +6,7 @@ A comprehensive C# console-based e-commerce application built with .NET 8.0, fea
 
 - [Features](#features)
 - [Architecture](#architecture)
+- [System Design Doc](#system-design-doc)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -30,6 +31,7 @@ A comprehensive C# console-based e-commerce application built with .NET 8.0, fea
 - **Strategy Pattern**: Flexible payment processing system
 - **Factory Pattern**: User creation and management
 - **Observer Pattern**: Event-driven notifications and updates
+- **State Pattern**: Enforced order lifecycle transitions
 - **JSON Persistence**: Data persistence using JSON files
 
 ## 🏗️ Architecture
@@ -113,6 +115,12 @@ The application follows a layered architecture pattern:
    - **Administrators**: Access to product management, user management, and sales reports
 4. **Navigation**: Use numbered options to navigate through menus
 5. **Exit**: Type '0' or select the exit option to close the application
+
+## 📘 System Design Doc
+
+Project documentation index:
+
+- [docs/README.md](docs/README.md)
 
 ### Default Admin Account
 
