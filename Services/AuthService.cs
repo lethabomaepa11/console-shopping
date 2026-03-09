@@ -1,15 +1,18 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.Domain.Repositories;
 
 namespace ConsoleShoppingApp.Services;
 
 public sealed class AuthService
 {
+    private readonly IUserRepository _userRepository;
     private readonly InMemoryStore _store;
     private readonly IUserFactory _userFactory;
     private readonly IStorePersistence _persistence;
 
-    public AuthService(InMemoryStore store, IStorePersistence persistence)
+    public AuthService(IUserRepository userRepository, InMemoryStore store, IStorePersistence persistence)
     {
+        _userRepository = userRepository;
         _store = store;
         _persistence = persistence;
         _userFactory = new UserFactory();
@@ -22,8 +25,7 @@ public sealed class AuthService
             throw new DomainException("All fields are required.");
         }
 
-        var exists = _store.Customers.Any(c => c.Username.Equals(username, StringComparison.OrdinalIgnoreCase)) ||
-                     _store.Administrators.Any(a => a.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        var exists = _userRepository.GetByUsername(username) != null;
         if (exists)
         {
             throw new DomainException("Username already exists.");
@@ -32,11 +34,11 @@ public sealed class AuthService
         var user = _userFactory.Create(username.Trim(), password.Trim(), fullName.Trim(), role);
         if (user is Customer customer)
         {
-            _store.Customers.Add(customer);
+            _userRepository.AddCustomer(customer);
         }
         else if (user is Administrator administrator)
         {
-            _store.Administrators.Add(administrator);
+            _userRepository.AddAdministrator(administrator);
         }
 
         _persistence.Save(_store);
@@ -45,12 +47,12 @@ public sealed class AuthService
 
     public User? Login(string username, string password)
     {
-        var user = _store.Customers.Cast<User>()
-            .Concat(_store.Administrators)
-            .FirstOrDefault(u =>
-                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) &&
-                u.Password == password);
+        var user = _userRepository.GetByUsername(username);
+        if (user != null && user.Password == password)
+        {
+            return user;
+        }
 
-        return user;
+        return null;
     }
 }

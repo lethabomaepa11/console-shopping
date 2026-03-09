@@ -1,4 +1,6 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.Domain.Repositories;
+using ConsoleShoppingApp.Data;
 using ConsoleShoppingApp.App.Menus;
 using ConsoleShoppingApp.Services;
 
@@ -20,10 +22,19 @@ public sealed class ShoppingApplication
         _store = InMemoryStore.Instance;
         _persistence = new JsonStorePersistence();
         _persistence.Load(_store);
-        _authService = new AuthService(_store, _persistence);
-        _catalogService = new CatalogService(_store, _persistence);
+
+        var userRepository = new UserRepository(_store);
+        var productRepository = new ProductRepository(_store);
+        var orderRepository = new OrderRepository(_store);
+
+        _authService = new AuthService(userRepository, _store, _persistence);
+        _catalogService = new CatalogService(productRepository, _store, _persistence);
         _cartService = new CartService(_store, _catalogService, _persistence);
-        _orderService = new OrderService(_store, _catalogService, _cartService, new WalletPaymentStrategy(), _persistence);
+        _orderService = new OrderService(orderRepository, productRepository, _store, _catalogService, _cartService, new WalletPaymentStrategy(), _persistence);
+
+        var orderNotificationLogger = new OrderNotificationLogger();
+        _orderService.Subscribe(orderNotificationLogger);
+
         _reviewService = new ReviewService(_store, _catalogService, _orderService, _persistence);
         _reportService = new ReportService(_store, _catalogService);
 

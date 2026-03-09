@@ -1,27 +1,47 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.Domain.Repositories;
+using ConsoleShoppingApp.Domain.Observers;
 
 namespace ConsoleShoppingApp.Services;
 
 public sealed class OrderService
 {
+    private readonly IOrderRepository _orderRepository;
+    private readonly IProductRepository _productRepository;
     private readonly InMemoryStore _store;
     private readonly CatalogService _catalogService;
     private readonly CartService _cartService;
     private readonly IPaymentStrategy _paymentStrategy;
     private readonly IStorePersistence _persistence;
+    private readonly List<IOrderObserver> _observers = new();
 
     public OrderService(
+        IOrderRepository orderRepository,
+        IProductRepository productRepository,
         InMemoryStore store,
         CatalogService catalogService,
         CartService cartService,
         IPaymentStrategy paymentStrategy,
         IStorePersistence persistence)
     {
+        _orderRepository = orderRepository;
+        _productRepository = productRepository;
         _store = store;
         _catalogService = catalogService;
         _cartService = cartService;
         _paymentStrategy = paymentStrategy;
         _persistence = persistence;
+    }
+
+    public void Subscribe(IOrderObserver observer) => _observers.Add(observer);
+    public void Unsubscribe(IOrderObserver observer) => _observers.Remove(observer);
+
+    public void Notify(Order order)
+    {
+        foreach (var observer in _observers)
+        {
+            observer.Update(order);
+        }
     }
 
     public Order Checkout(Guid customerId)
@@ -58,48 +78,51 @@ public sealed class OrderService
         {
             var product = _catalogService.GetProductOrThrow(item.ProductId);
             product.StockQuantity -= item.Quantity;
+            _productRepository.Update(product);
         }
 
         order.Status = OrderStatus.Paid;
-        _store.Orders.Add(order);
+        _orderRepository.Add(order);
         _store.Payments.Add(payment);
         customer.Cart.Items.Clear();
         _persistence.Save(_store);
+
+        Notify(order);
+
         return order;
     }
 
     public List<Order> GetCustomerOrders(Guid customerId)
     {
-        return _store.Orders
-            .Where(o => o.CustomerId == customerId)
+        return _orderRepository.GetByCustomerId(customerId)
             .OrderByDescending(o => o.CreatedAt)
             .ToList();
     }
 
     public List<Order> GetAllOrders()
     {
-        return _store.Orders
+        return _orderRepository.GetAll()
             .OrderByDescending(o => o.CreatedAt)
             .ToList();
     }
 
     public void UpdateOrderStatus(Guid orderId, OrderStatus newStatus)
     {
-        var order = _store.Orders.FirstOrDefault(o => o.Id == orderId);
+        var order = _orderRepository.GetById(orderId);
         if (order is null)
         {
             throw new DomainException("Order not found.");
         }
 
         order.Status = newStatus;
+        _orderRepository.Update(order);
         _persistence.Save(_store);
+
+        Notify(order);
     }
 
     public bool HasCustomerPurchasedProduct(Guid customerId, Guid productId)
     {
-        return _store.Orders.Any(o =>
-            o.CustomerId == customerId &&
-            o.Status != OrderStatus.Cancelled &&
-            o.Items.Any(i => i.ProductId == productId));
+        return _orderRepository.HasPurchasedProduct(customerId, productId);
     }
 }
