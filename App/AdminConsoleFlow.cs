@@ -10,17 +10,20 @@ public sealed class AdminConsoleFlow
     private readonly CatalogService _catalogService;
     private readonly OrderService _orderService;
     private readonly ReportService _reportService;
+    private readonly SimulationService _simulationService;
     private readonly ConsoleView _view;
 
     public AdminConsoleFlow(
         CatalogService catalogService,
         OrderService orderService,
         ReportService reportService,
+        SimulationService simulationService,
         ConsoleView view)
     {
         _catalogService = catalogService;
         _orderService = orderService;
         _reportService = reportService;
+        _simulationService = simulationService;
         _view = view;
     }
 
@@ -68,6 +71,9 @@ public sealed class AdminConsoleFlow
                 return true;
             case AdminMenuSelection.GenerateSalesReports:
                 ShowReports();
+                return true;
+            case AdminMenuSelection.RunDigitalTwinSimulation:
+                RunDigitalTwinSimulation();
                 return true;
             case AdminMenuSelection.Logout:
                 return false;
@@ -239,6 +245,36 @@ public sealed class AdminConsoleFlow
             .Select(item => $"- {item.ProductName}: {item.QuantitySold} units")
             .ToList()
             .ForEach(Console.WriteLine);
+
+        ConsoleView.Pause();
+    }
+
+    private void RunDigitalTwinSimulation()
+    {
+        Console.Clear();
+        Console.WriteLine("=== Digital Twin Simulation ===");
+        var syntheticCustomers = Input.ReadInt("Synthetic customers: ", 1, 10000);
+        var maxOrdersPerCustomer = Input.ReadInt("Max orders per customer: ", 1, 20);
+
+        var report = _simulationService.RunDigitalTwin(syntheticCustomers, maxOrdersPerCustomer);
+        Console.WriteLine();
+        Console.WriteLine($"Synthetic Customers: {report.SyntheticCustomers}");
+        Console.WriteLine($"Simulated Orders: {report.SimulatedOrders}");
+        Console.WriteLine($"Simulated Revenue: {report.SimulatedRevenue:C2}");
+        Console.WriteLine($"Average Order Value: {report.AverageOrderValue:C2}");
+        Console.WriteLine("Top Simulated Products:");
+
+        if (!report.TopProducts.Any())
+        {
+            Console.WriteLine("- None");
+        }
+        else
+        {
+            foreach (var product in report.TopProducts)
+            {
+                Console.WriteLine($"- {product.ProductName}: {product.UnitsSold} units");
+            }
+        }
 
         ConsoleView.Pause();
     }

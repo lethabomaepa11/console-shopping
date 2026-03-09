@@ -14,6 +14,9 @@ This document explains how the `console-shopping` application is structured and 
 - Order tracking and status updates
 - Product reviews
 - Sales and stock reporting
+- AI shopping assistant (external API-backed)
+- Hybrid product recommendations
+- Digital twin demand simulation (non-destructive)
 - JSON persistence for application state
 
 Entry point:
@@ -199,6 +202,9 @@ Each service owns a focused set of business use cases:
 - Checkout and order lifecycle: [OrderService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/OrderService.cs)
 - Reviews: [ReviewService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/ReviewService.cs)
 - Reporting: [ReportService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/ReportService.cs)
+- Assistant responses: [ShoppingAssistantService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/ShoppingAssistantService.cs)
+- Recommendations: [RecommendationService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/RecommendationService.cs)
+- Simulation workloads: [SimulationService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/SimulationService.cs)
 
 Why:
 
@@ -238,6 +244,50 @@ Why:
 - Keeps interactive I/O concerns out of service/domain logic.
 - Reuses a generic menu model to avoid duplicated UI code.
 - Enforces role-based behavior consistently.
+
+### 7.1 AI Assistant Interaction
+
+Assistant integration details:
+
+- Endpoint: `https://nwu-vaal-gkss.netlify.app/api/ai`
+- Request body contains `message` and `model`
+- Response is rendered in a streamed console style
+- User manually terminates assistant mode with `/exit`
+
+Primary integration points:
+
+- [ShoppingAssistantService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/ShoppingAssistantService.cs)
+- [CustomerConsoleFlow.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/App/CustomerConsoleFlow.cs)
+
+### 7.2 Recommendation Flow
+
+Recommendations use hybrid scoring:
+
+- Category affinity (from purchases/reviews)
+- Similar-customer purchasing overlap
+- Product rating signal
+- Sales-demand fallback signal
+
+Primary integration points:
+
+- [RecommendationService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/RecommendationService.cs)
+- [CustomerConsoleFlow.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/App/CustomerConsoleFlow.cs)
+
+### 7.3 Digital Twin Simulation
+
+Simulation mode creates synthetic customers/orders to estimate:
+
+- Simulated order volume
+- Simulated revenue
+- Average order value
+- Top simulated products
+
+The simulation is non-destructive and does not mutate persisted store data.
+
+Primary integration points:
+
+- [SimulationService.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/Services/SimulationService.cs)
+- [AdminConsoleFlow.cs](/C:/Users/Lethabo/Desktop/projects/console-shopping/App/AdminConsoleFlow.cs)
 
 ## 8. Tradeoffs and Current Constraints
 

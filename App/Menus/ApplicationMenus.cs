@@ -29,7 +29,9 @@ public static class ApplicationMenus
                 new MenuOption<CustomerMenuSelection>(9, "View Order History", CustomerMenuSelection.ViewOrderHistory),
                 new MenuOption<CustomerMenuSelection>(10, "Track Orders", CustomerMenuSelection.TrackOrders),
                 new MenuOption<CustomerMenuSelection>(11, "Review Products", CustomerMenuSelection.ReviewProducts),
-                new MenuOption<CustomerMenuSelection>(12, "Logout", CustomerMenuSelection.Logout)
+                new MenuOption<CustomerMenuSelection>(12, "Recommended For You", CustomerMenuSelection.RecommendedForYou),
+                new MenuOption<CustomerMenuSelection>(13, "Ask Shopping Assistant", CustomerMenuSelection.AskShoppingAssistant),
+                new MenuOption<CustomerMenuSelection>(14, "Logout", CustomerMenuSelection.Logout)
             ]);
     }
 
@@ -47,7 +49,8 @@ public static class ApplicationMenus
                 new MenuOption<AdminMenuSelection>(7, "Update Order Status", AdminMenuSelection.UpdateOrderStatus),
                 new MenuOption<AdminMenuSelection>(8, "View Low Stock Products", AdminMenuSelection.ViewLowStockProducts),
                 new MenuOption<AdminMenuSelection>(9, "Generate Sales Reports", AdminMenuSelection.GenerateSalesReports),
-                new MenuOption<AdminMenuSelection>(10, "Logout", AdminMenuSelection.Logout)
+                new MenuOption<AdminMenuSelection>(10, "Run Digital Twin Simulation", AdminMenuSelection.RunDigitalTwinSimulation),
+                new MenuOption<AdminMenuSelection>(11, "Logout", AdminMenuSelection.Logout)
             ]);
     }
 }

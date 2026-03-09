@@ -22,6 +22,9 @@ A comprehensive C# console-based e-commerce application built with .NET 8.0, fea
 - **Shopping Cart**: Add/remove items, update quantities, and manage cart contents
 - **Order Processing**: Complete checkout flow with payment integration and order tracking
 - **Reviews & Ratings**: Customer feedback system for products
+- **AI Shopping Assistant**: Customer Q&A assistant with streamed responses
+- **Hybrid Recommendations**: "Recommended For You" based on behavior, ratings, and demand signals
+- **Digital Twin Simulation**: Admin-only synthetic demand simulation for planning
 - **Admin Dashboard**: Comprehensive administrative interface for store management
 
 ### Technical Features
@@ -101,6 +104,11 @@ The application follows a layered architecture pattern:
    dotnet run --project console-shopping.csproj
    ```
 
+   Optional AI assistant model override:
+   ```bash
+   set SHOPPING_ASSISTANT_MODEL=llama-3.1-8b-instant
+   ```
+
 2. **From Visual Studio:**
    - Open the solution file (`projects.slnx`)
    - Set `console-shopping` as the startup project
@@ -114,7 +122,14 @@ The application follows a layered architecture pattern:
    - **Customers**: Access to product browsing, cart management, and order history
    - **Administrators**: Access to product management, user management, and sales reports
 4. **Navigation**: Use numbered options to navigate through menus
+   - Menu supports Arrow keys + Enter, or typed numbers
 5. **Exit**: Type '0' or select the exit option to close the application
+
+### AI Assistant Notes
+
+- The assistant calls: `https://nwu-vaal-gkss.netlify.app/api/ai`
+- Request body shape: `message`, `model`
+- You can end assistant chat manually by typing `/exit`
 
 ## 📘 System Design Doc
 

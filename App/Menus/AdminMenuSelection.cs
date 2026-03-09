@@ -11,5 +11,6 @@ public enum AdminMenuSelection
     UpdateOrderStatus = 7,
     ViewLowStockProducts = 8,
     GenerateSalesReports = 9,
-    Logout = 10
+    RunDigitalTwinSimulation = 10,
+    Logout = 11
 }
