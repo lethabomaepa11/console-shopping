@@ -1,3 +1,4 @@
+using ConsoleShoppingApp.Domain.Models;
 using ConsoleShoppingApp.Domain;
 using ConsoleShoppingApp.Domain.Observers;
 

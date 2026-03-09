@@ -1,3 +1,5 @@
+using ConsoleShoppingApp.Domain.Models;
+
 namespace ConsoleShoppingApp.Domain;
 
 public interface IUserFactory
