@@ -1,4 +1,6 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.Domain.Repositories;
+using ConsoleShoppingApp.Data;
 using ConsoleShoppingApp.App.Menus;
 using ConsoleShoppingApp.Services;
 
@@ -17,10 +19,18 @@ public sealed class ShoppingApplication
         var persistence = new JsonStorePersistence();
         persistence.Load(store);
 
-        _authService = new AuthService(store, persistence);
-        var catalogService = new CatalogService(store, persistence);
+        var userRepository = new UserRepository(store);
+        var productRepository = new ProductRepository(store);
+        var orderRepository = new OrderRepository(store);
+
+        _authService = new AuthService(userRepository, store, persistence);
+        var catalogService = new CatalogService(productRepository, store, persistence);
         var cartService = new CartService(store, catalogService, persistence);
-        var orderService = new OrderService(store, catalogService, cartService, new WalletPaymentStrategy(), persistence);
+        var orderService = new OrderService(orderRepository, productRepository, store, catalogService, cartService, new WalletPaymentStrategy(), persistence);
+
+        var orderNotificationLogger = new OrderNotificationLogger();
+        orderService.Subscribe(orderNotificationLogger);
+
         var reviewService = new ReviewService(store, catalogService, orderService, persistence);
         var reportService = new ReportService(store, catalogService);
 

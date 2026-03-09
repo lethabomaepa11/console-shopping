@@ -1,15 +1,18 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.Domain.Repositories;
 
 namespace ConsoleShoppingApp.Services;
 
 public sealed class CatalogService
 {
+    private readonly IProductRepository _productRepository;
     private readonly InMemoryStore _store;
     private readonly IStorePersistence _persistence;
 
-    public CatalogService(InMemoryStore store, IStorePersistence persistence)
+    public CatalogService(IProductRepository productRepository, InMemoryStore store, IStorePersistence persistence)
     {
-        _store = store;
+        _productRepository = productRepository;
+        _store = store; // Still needed for persistence
         _persistence = persistence;
     }
 
@@ -26,7 +29,7 @@ public sealed class CatalogService
         }
 
         var product = new Product(name.Trim(), description.Trim(), category.Trim(), price, stockQuantity);
-        _store.Products.Add(product);
+        _productRepository.Add(product);
         _persistence.Save(_store);
         return product;
     }
@@ -43,13 +46,14 @@ public sealed class CatalogService
         product.Description = description.Trim();
         product.Category = category.Trim();
         product.Price = price;
+        _productRepository.Update(product);
         _persistence.Save(_store);
     }
 
     public void DeleteProduct(Guid productId)
     {
         var product = GetProductOrThrow(productId);
-        product.IsDeleted = true;
+        _productRepository.Delete(productId);
         _persistence.Save(_store);
     }
 
@@ -62,46 +66,34 @@ public sealed class CatalogService
 
         var product = GetProductOrThrow(productId);
         product.StockQuantity += quantity;
+        _productRepository.Update(product);
         _persistence.Save(_store);
     }
 
     public List<Product> GetAvailableProducts()
     {
-        return _store.Products
-            .Where(p => !p.IsDeleted && p.StockQuantity > 0)
+        return _productRepository.GetAvailable()
             .OrderBy(p => p.Name)
             .ToList();
     }
 
     public List<Product> GetAllProducts()
     {
-        return _store.Products
-            .Where(p => !p.IsDeleted)
+        return _productRepository.GetAll()
             .OrderBy(p => p.Name)
             .ToList();
     }
 
     public List<Product> SearchProducts(string keyword)
     {
-        if (string.IsNullOrWhiteSpace(keyword))
-        {
-            return GetAvailableProducts();
-        }
-
-        var key = keyword.Trim().ToLowerInvariant();
-        return _store.Products
-            .Where(p => !p.IsDeleted && p.StockQuantity > 0)
-            .Where(p =>
-                p.Name.ToLowerInvariant().Contains(key) ||
-                p.Description.ToLowerInvariant().Contains(key) ||
-                p.Category.ToLowerInvariant().Contains(key))
+        return _productRepository.Search(keyword)
             .OrderBy(p => p.Name)
             .ToList();
     }
 
     public Product GetProductOrThrow(Guid productId)
     {
-        var product = _store.Products.FirstOrDefault(p => p.Id == productId);
+        var product = _productRepository.GetById(productId);
         if (product is null)
         {
             throw new DomainException("Product not found.");
