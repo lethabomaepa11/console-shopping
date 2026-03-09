@@ -1,0 +1,78 @@
+{
+  "Customers": [
+    {
+      "Id": "bd49bb84-1cb6-4147-a3df-9b1b44204661",
+      "Username": "customer",
+      "Password": "cust123",
+      "FullName": "Default Customer",
+      "WalletBalance": 5000,
+      "CartItems": []
+    },
+    {
+      "Id": "2c72fedf-c159-44da-b66e-c1316dff5e6a",
+      "Username": "lethabo",
+      "Password": "lethabo",
+      "FullName": "Lethabo",
+      "WalletBalance": 0,
+      "CartItems": []
+    }
+  ],
+  "Administrators": [
+    {
+      "Id": "cff51fa7-1922-4d51-bfa3-c0e809768aef",
+      "Username": "admin",
+      "Password": "admin123",
+      "FullName": "System Admin"
+    }
+  ],
+  "Products": [
+    {
+      "Id": "8f4e671a-e3bf-4c18-aac2-d963b8b3fca2",
+      "Name": "Laptop",
+      "Description": "15-inch business laptop",
+      "Category": "Electronics",
+      "Price": 1299.99,
+      "StockQuantity": 12,
+      "IsDeleted": false
+    },
+    {
+      "Id": "e352a5f7-8ccc-4e84-b9e9-572a7842fd84",
+      "Name": "Headphones",
+      "Description": "Noise-cancelling headphones",
+      "Category": "Electronics",
+      "Price": 199.50,
+      "StockQuantity": 40,
+      "IsDeleted": false
+    },
+    {
+      "Id": "5841428e-b69b-4a81-816f-3edea38cdf12",
+      "Name": "Desk Chair",
+      "Description": "Ergonomic office chair",
+      "Category": "Furniture",
+      "Price": 320,
+      "StockQuantity": 8,
+      "IsDeleted": false
+    },
+    {
+      "Id": "6d7fa35c-96af-4380-8bb5-8c49310ded2e",
+      "Name": "Water Bottle",
+      "Description": "1L stainless steel bottle",
+      "Category": "Lifestyle",
+      "Price": 25,
+      "StockQuantity": 100,
+      "IsDeleted": false
+    },
+    {
+      "Id": "9ba427eb-7b7f-4ac8-b52e-afdad3b0252f",
+      "Name": "27\u0027 Desktop Monitor",
+      "Description": "27\u0027 Desktop Monitor",
+      "Category": "Computers",
+      "Price": 2570,
+      "StockQuantity": 6,
+      "IsDeleted": false
+    }
+  ],
+  "Orders": [],
+  "Reviews": [],
+  "Payments": []
+}

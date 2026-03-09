@@ -1,4 +1,5 @@
 using ConsoleShoppingApp.Domain;
+using ConsoleShoppingApp.App.Menus;
 using ConsoleShoppingApp.Services;
 
 namespace ConsoleShoppingApp.App;
@@ -34,21 +35,16 @@ public sealed class ShoppingApplication
     {
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine("=== Online Shopping Backend System ===");
-            Console.WriteLine("1. Register");
-            Console.WriteLine("2. Login");
-            Console.WriteLine("3. Exit");
-
-            switch (Input.ReadInt("Select option: ", 1, 3))
+            var selection = ShowMenu(ApplicationMenus.CreateMainMenu());
+            switch (selection)
             {
-                case 1:
+                case MainMenuSelection.Register:
                     Register();
                     break;
-                case 2:
+                case MainMenuSelection.Login:
                     Login();
                     break;
-                case 3:
+                case MainMenuSelection.Exit:
                     return;
             }
         }
@@ -103,117 +99,111 @@ public sealed class ShoppingApplication
 
     private void CustomerMenu(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
 
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine($"=== Customer Menu ({customer.FullName}) ===");
-            Console.WriteLine("1. Browse Products");
-            Console.WriteLine("2. Search Products");
-            Console.WriteLine("3. Add Product to Cart");
-            Console.WriteLine("4. View Cart");
-            Console.WriteLine("5. Update Cart");
-            Console.WriteLine("6. Checkout");
-            Console.WriteLine("7. View Wallet Balance");
-            Console.WriteLine("8. Add Wallet Funds");
-            Console.WriteLine("9. View Order History");
-            Console.WriteLine("10. Track Orders");
-            Console.WriteLine("11. Review Products");
-            Console.WriteLine("12. Logout");
-
-            switch (Input.ReadInt("Select option: ", 1, 12))
+            var selection = ShowMenu(ApplicationMenus.CreateCustomerMenu(customer.FullName));
+            if (!HandleCustomerMenuSelection(customer, selection))
             {
-                case 1:
-                    BrowseProducts();
-                    break;
-                case 2:
-                    SearchProducts();
-                    break;
-                case 3:
-                    AddToCart(customer);
-                    break;
-                case 4:
-                    ViewCart(customer);
-                    break;
-                case 5:
-                    UpdateCart(customer);
-                    break;
-                case 6:
-                    Checkout(customer);
-                    break;
-                case 7:
-                    PrintInfo($"Wallet Balance: {customer.WalletBalance:C2}");
-                    break;
-                case 8:
-                    AddFunds(customer);
-                    break;
-                case 9:
-                    ViewOrderHistory(customer);
-                    break;
-                case 10:
-                    TrackOrders(customer);
-                    break;
-                case 11:
-                    ReviewProduct(customer);
-                    break;
-                case 12:
-                    return;
+                return;
             }
         }
     }
 
     private void AdminMenu(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
 
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine($"=== Administrator Menu ({admin.FullName}) ===");
-            Console.WriteLine("1. Add Product");
-            Console.WriteLine("2. Update Product");
-            Console.WriteLine("3. Delete Product");
-            Console.WriteLine("4. Restock Product");
-            Console.WriteLine("5. View Products");
-            Console.WriteLine("6. View Orders");
-            Console.WriteLine("7. Update Order Status");
-            Console.WriteLine("8. View Low Stock Products");
-            Console.WriteLine("9. Generate Sales Reports");
-            Console.WriteLine("10. Logout");
-
-            switch (Input.ReadInt("Select option: ", 1, 10))
+            var selection = ShowMenu(ApplicationMenus.CreateAdministratorMenu(admin.FullName));
+            if (!HandleAdministratorMenuSelection(admin, selection))
             {
-                case 1:
-                    AddProduct(admin);
-                    break;
-                case 2:
-                    UpdateProduct(admin);
-                    break;
-                case 3:
-                    DeleteProduct(admin);
-                    break;
-                case 4:
-                    RestockProduct(admin);
-                    break;
-                case 5:
-                    BrowseProducts();
-                    break;
-                case 6:
-                    ViewAllOrders(admin);
-                    break;
-                case 7:
-                    UpdateOrderStatus(admin);
-                    break;
-                case 8:
-                    ViewLowStock(admin);
-                    break;
-                case 9:
-                    ShowReports(admin);
-                    break;
-                case 10:
-                    return;
+                return;
             }
+        }
+    }
+
+    private bool HandleCustomerMenuSelection(Customer customer, CustomerMenuSelection selection)
+    {
+        switch (selection)
+        {
+            case CustomerMenuSelection.BrowseProducts:
+                BrowseProducts();
+                return true;
+            case CustomerMenuSelection.SearchProducts:
+                SearchProducts();
+                return true;
+            case CustomerMenuSelection.AddProductToCart:
+                AddToCart(customer);
+                return true;
+            case CustomerMenuSelection.ViewCart:
+                ViewCart(customer);
+                return true;
+            case CustomerMenuSelection.UpdateCart:
+                UpdateCart(customer);
+                return true;
+            case CustomerMenuSelection.Checkout:
+                Checkout(customer);
+                return true;
+            case CustomerMenuSelection.ViewWalletBalance:
+                PrintInfo($"Wallet Balance: {customer.WalletBalance:C2}");
+                return true;
+            case CustomerMenuSelection.AddWalletFunds:
+                AddFunds(customer);
+                return true;
+            case CustomerMenuSelection.ViewOrderHistory:
+                ViewOrderHistory(customer);
+                return true;
+            case CustomerMenuSelection.TrackOrders:
+                TrackOrders(customer);
+                return true;
+            case CustomerMenuSelection.ReviewProducts:
+                ReviewProduct(customer);
+                return true;
+            case CustomerMenuSelection.Logout:
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(selection), selection, null);
+        }
+    }
+
+    private bool HandleAdministratorMenuSelection(Administrator admin, AdminMenuSelection selection)
+    {
+        switch (selection)
+        {
+            case AdminMenuSelection.AddProduct:
+                AddProduct(admin);
+                return true;
+            case AdminMenuSelection.UpdateProduct:
+                UpdateProduct(admin);
+                return true;
+            case AdminMenuSelection.DeleteProduct:
+                DeleteProduct(admin);
+                return true;
+            case AdminMenuSelection.RestockProduct:
+                RestockProduct(admin);
+                return true;
+            case AdminMenuSelection.ViewProducts:
+                BrowseProducts();
+                return true;
+            case AdminMenuSelection.ViewOrders:
+                ViewAllOrders(admin);
+                return true;
+            case AdminMenuSelection.UpdateOrderStatus:
+                UpdateOrderStatus(admin);
+                return true;
+            case AdminMenuSelection.ViewLowStockProducts:
+                ViewLowStock(admin);
+                return true;
+            case AdminMenuSelection.GenerateSalesReports:
+                ShowReports(admin);
+                return true;
+            case AdminMenuSelection.Logout:
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(selection), selection, null);
         }
     }
 
@@ -237,7 +227,7 @@ public sealed class ShoppingApplication
 
     private void AddToCart(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         var products = _catalogService.GetAvailableProducts();
         Console.WriteLine("=== Add Product to Cart ===");
@@ -265,7 +255,7 @@ public sealed class ShoppingApplication
 
     private void ViewCart(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Cart ===");
         var details = _cartService.GetCartDetails(customer.Id);
@@ -289,7 +279,7 @@ public sealed class ShoppingApplication
 
     private void UpdateCart(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Update Cart ===");
         var details = _cartService.GetCartDetails(customer.Id);
@@ -323,7 +313,7 @@ public sealed class ShoppingApplication
 
     private void Checkout(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         try
         {
@@ -338,7 +328,7 @@ public sealed class ShoppingApplication
 
     private void AddFunds(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         var amount = Input.ReadDecimal("Amount to add: ", 1m, 1_000_000m);
         customer.WalletBalance += amount;
@@ -348,7 +338,7 @@ public sealed class ShoppingApplication
 
     private void ViewOrderHistory(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Order History ===");
         PrintOrderList(_orderService.GetCustomerOrders(customer.Id));
@@ -357,7 +347,7 @@ public sealed class ShoppingApplication
 
     private void TrackOrders(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         Console.WriteLine("=== Track Orders ===");
         var orders = _orderService.GetCustomerOrders(customer.Id);
@@ -374,7 +364,7 @@ public sealed class ShoppingApplication
 
     private void ReviewProduct(Customer customer)
     {
-        EnsureCustomer(customer);
+        AccessGuard.EnsureCustomer(customer);
         Console.Clear();
         var products = _catalogService.GetAvailableProducts();
         Console.WriteLine("=== Review Products ===");
@@ -402,7 +392,7 @@ public sealed class ShoppingApplication
 
     private void AddProduct(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var name = Input.ReadRequired("Name: ");
         var description = Input.ReadRequired("Description: ");
@@ -423,7 +413,7 @@ public sealed class ShoppingApplication
 
     private void UpdateProduct(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var products = _catalogService.GetAllProducts();
         Console.WriteLine("=== Update Product ===");
@@ -453,7 +443,7 @@ public sealed class ShoppingApplication
 
     private void DeleteProduct(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var products = _catalogService.GetAllProducts();
         Console.WriteLine("=== Delete Product ===");
@@ -478,7 +468,7 @@ public sealed class ShoppingApplication
 
     private void RestockProduct(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var products = _catalogService.GetAllProducts();
         Console.WriteLine("=== Restock Product ===");
@@ -504,7 +494,7 @@ public sealed class ShoppingApplication
 
     private void ViewAllOrders(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         Console.WriteLine("=== All Orders ===");
         PrintOrderList(_orderService.GetAllOrders());
@@ -513,7 +503,7 @@ public sealed class ShoppingApplication
 
     private void UpdateOrderStatus(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var orders = _orderService.GetAllOrders();
         Console.WriteLine("=== Update Order Status ===");
@@ -548,7 +538,7 @@ public sealed class ShoppingApplication
 
     private void ViewLowStock(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         Console.WriteLine("=== Low Stock Products ===");
         PrintProductList(_reportService.GetLowStockProducts(5));
@@ -557,7 +547,7 @@ public sealed class ShoppingApplication
 
     private void ShowReports(Administrator admin)
     {
-        EnsureAdministrator(admin);
+        AccessGuard.EnsureAdministrator(admin);
         Console.Clear();
         var report = _reportService.GenerateSalesReport();
         Console.WriteLine("=== Sales Report ===");
@@ -617,20 +607,17 @@ public sealed class ShoppingApplication
         return orders[index];
     }
 
-    private static void EnsureCustomer(User user)
+    private static TSelection ShowMenu<TSelection>(MenuDefinition<TSelection> menu) where TSelection : struct, Enum
     {
-        if (user.Role != UserRole.Customer)
+        Console.Clear();
+        Console.WriteLine(menu.Title);
+        foreach (var option in menu.Options)
         {
-            throw new DomainException("Access denied. Customer role required.");
+            Console.WriteLine($"{option.Number}. {option.Label}");
         }
-    }
 
-    private static void EnsureAdministrator(User user)
-    {
-        if (user.Role != UserRole.Administrator)
-        {
-            throw new DomainException("Access denied. Administrator role required.");
-        }
+        var selectedIndex = Input.ReadInt(menu.Prompt, 1, menu.Options.Count) - 1;
+        return menu.Options[selectedIndex].Selection;
     }
 
     private static void PrintSuccess(string message)
