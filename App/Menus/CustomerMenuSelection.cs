@@ -13,5 +13,7 @@ public enum CustomerMenuSelection
     ViewOrderHistory = 9,
     TrackOrders = 10,
     ReviewProducts = 11,
-    Logout = 12
+    RecommendedForYou = 12,
+    AskShoppingAssistant = 13,
+    Logout = 14
 }

@@ -33,11 +33,13 @@ internal static class ApplicationMenusTests
         var menu = ApplicationMenus.CreateCustomerMenu("Jane Doe");
 
         TestAssert.Equal("=== Customer Menu (Jane Doe) ===", menu.Title, "Customer menu title mismatch.");
-        TestAssert.Equal(12, menu.Options.Count, "Customer menu option count mismatch.");
+        TestAssert.Equal(14, menu.Options.Count, "Customer menu option count mismatch.");
         TestAssert.Equal(CustomerMenuSelection.BrowseProducts, menu.Options[0].Selection, "Customer first option mismatch.");
+        TestAssert.Equal(CustomerMenuSelection.RecommendedForYou, menu.Options[11].Selection, "Customer recommendations option mismatch.");
+        TestAssert.Equal(CustomerMenuSelection.AskShoppingAssistant, menu.Options[12].Selection, "Customer assistant option mismatch.");
         TestAssert.Equal(CustomerMenuSelection.Logout, menu.Options[^1].Selection, "Customer logout selection mismatch.");
         TestAssert.Equal("Logout", menu.Options[^1].Label, "Customer logout label mismatch.");
-        TestAssert.Equal(12, menu.Options[^1].Number, "Customer logout number mismatch.");
+        TestAssert.Equal(14, menu.Options[^1].Number, "Customer logout number mismatch.");
     }
 
     private static void AdministratorMenu_UsesExpectedCommands()
@@ -45,9 +47,10 @@ internal static class ApplicationMenusTests
         var menu = ApplicationMenus.CreateAdministratorMenu("System Admin");
 
         TestAssert.Equal("=== Administrator Menu (System Admin) ===", menu.Title, "Administrator menu title mismatch.");
-        TestAssert.Equal(10, menu.Options.Count, "Administrator menu option count mismatch.");
+        TestAssert.Equal(11, menu.Options.Count, "Administrator menu option count mismatch.");
         TestAssert.Equal(AdminMenuSelection.AddProduct, menu.Options[0].Selection, "Administrator first option mismatch.");
         TestAssert.Equal(AdminMenuSelection.GenerateSalesReports, menu.Options[8].Selection, "Administrator reports option mismatch.");
-        TestAssert.Equal(AdminMenuSelection.Logout, menu.Options[9].Selection, "Administrator logout selection mismatch.");
+        TestAssert.Equal(AdminMenuSelection.RunDigitalTwinSimulation, menu.Options[9].Selection, "Administrator simulation option mismatch.");
+        TestAssert.Equal(AdminMenuSelection.Logout, menu.Options[10].Selection, "Administrator logout selection mismatch.");
     }
 }

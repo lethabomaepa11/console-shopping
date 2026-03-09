@@ -13,6 +13,8 @@ public sealed class CustomerConsoleFlow
     private readonly CartService _cartService;
     private readonly OrderService _orderService;
     private readonly ReviewService _reviewService;
+    private readonly RecommendationService _recommendationService;
+    private readonly IShoppingAssistantService _shoppingAssistantService;
     private readonly ConsoleView _view;
 
     public CustomerConsoleFlow(
@@ -22,6 +24,8 @@ public sealed class CustomerConsoleFlow
         CartService cartService,
         OrderService orderService,
         ReviewService reviewService,
+        RecommendationService recommendationService,
+        IShoppingAssistantService shoppingAssistantService,
         ConsoleView view)
     {
         _store = store;
@@ -30,6 +34,8 @@ public sealed class CustomerConsoleFlow
         _cartService = cartService;
         _orderService = orderService;
         _reviewService = reviewService;
+        _recommendationService = recommendationService;
+        _shoppingAssistantService = shoppingAssistantService;
         _view = view;
     }
 
@@ -83,6 +89,12 @@ public sealed class CustomerConsoleFlow
                 return true;
             case CustomerMenuSelection.ReviewProducts:
                 ReviewProduct(customer);
+                return true;
+            case CustomerMenuSelection.RecommendedForYou:
+                ShowRecommendations(customer);
+                return true;
+            case CustomerMenuSelection.AskShoppingAssistant:
+                AskAssistant(customer);
                 return true;
             case CustomerMenuSelection.Logout:
                 return false;
@@ -234,6 +246,64 @@ public sealed class CustomerConsoleFlow
         catch (DomainException ex)
         {
             ConsoleView.PrintError(ex.Message);
+        }
+    }
+
+    private void ShowRecommendations(Customer customer)
+    {
+        Console.Clear();
+        Console.WriteLine("=== Recommended For You ===");
+        var recommendations = _recommendationService.GetRecommendations(customer.Id, 5);
+        if (!recommendations.Any())
+        {
+            ConsoleView.PrintInfo("No recommendations available yet.");
+            return;
+        }
+
+        foreach (var item in recommendations)
+        {
+            Console.WriteLine($"{item.Product.Name} | {item.Product.Category} | {item.Product.Price:C2} | Score: {item.Score:F2}");
+            Console.WriteLine($"Reason: {string.Join(", ", item.Reasons)}");
+            Console.WriteLine();
+        }
+
+        ConsoleView.Pause();
+    }
+
+    private void AskAssistant(Customer customer)
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("=== AI Shopping Assistant ===");
+            Console.WriteLine("Type your question and press Enter.");
+            Console.WriteLine("Type /exit to return to the customer menu.");
+            Console.WriteLine();
+            Console.Write("You: ");
+            var question = Console.ReadLine();
+
+            if (string.Equals(question?.Trim(), "/exit", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(question))
+            {
+                continue;
+            }
+
+            var products = _catalogService.GetAvailableProducts();
+            var cartDetails = _cartService.GetCartDetails(customer.Id);
+            Console.Write("Assistant: ");
+            _shoppingAssistantService.StreamAnswerCustomerQuestion(question, products, cartDetails, chunk => Console.Write(chunk));
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Press Enter to ask another question, or type /exit.");
+            var next = Console.ReadLine();
+            if (string.Equals(next?.Trim(), "/exit", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
         }
     }
 }

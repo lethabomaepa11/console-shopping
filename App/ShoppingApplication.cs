@@ -33,11 +33,24 @@ public sealed class ShoppingApplication
         orderService.Subscribe(orderNotificationLogger);
 
         var reviewService = new ReviewService(store, catalogService, orderService, persistence);
+        var recommendationService = new RecommendationService(store, catalogService, orderService);
+        var simulationService = new SimulationService(store);
+        var assistantModel = Environment.GetEnvironmentVariable("SHOPPING_ASSISTANT_MODEL") ?? "llama-3.1-8b-instant";
+        IShoppingAssistantService shoppingAssistantService = new GroqShoppingAssistantService(assistantModel);
         var reportService = new ReportService(store, catalogService);
 
         _view = new ConsoleView(reviewService);
-        _customerFlow = new CustomerConsoleFlow(store, persistence, catalogService, cartService, orderService, reviewService, _view);
-        _adminFlow = new AdminConsoleFlow(catalogService, orderService, reportService, _view);
+        _customerFlow = new CustomerConsoleFlow(
+            store,
+            persistence,
+            catalogService,
+            cartService,
+            orderService,
+            reviewService,
+            recommendationService,
+            shoppingAssistantService,
+            _view);
+        _adminFlow = new AdminConsoleFlow(catalogService, orderService, reportService, simulationService, _view);
 
         SeedData.Initialize(store, _authService, catalogService);
         persistence.Save(store);
