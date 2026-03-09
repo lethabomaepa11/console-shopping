@@ -13,7 +13,7 @@
       "Username": "lethabo",
       "Password": "lethabo",
       "FullName": "Lethabo",
-      "WalletBalance": 0,
+      "WalletBalance": 72366.00,
       "CartItems": []
     }
   ],
@@ -23,6 +23,12 @@
       "Username": "admin",
       "Password": "admin123",
       "FullName": "System Admin"
+    },
+    {
+      "Id": "549d71ba-9a6e-4c02-abff-9d4cb87b949f",
+      "Username": "admin2",
+      "Password": "admin2",
+      "FullName": "System Admin Number 2"
     }
   ],
   "Products": [
@@ -41,7 +47,7 @@
       "Description": "Noise-cancelling headphones",
       "Category": "Electronics",
       "Price": 199.50,
-      "StockQuantity": 40,
+      "StockQuantity": 38,
       "IsDeleted": false
     },
     {
@@ -50,7 +56,7 @@
       "Description": "Ergonomic office chair",
       "Category": "Furniture",
       "Price": 320,
-      "StockQuantity": 8,
+      "StockQuantity": 6,
       "IsDeleted": false
     },
     {
@@ -59,7 +65,7 @@
       "Description": "1L stainless steel bottle",
       "Category": "Lifestyle",
       "Price": 25,
-      "StockQuantity": 100,
+      "StockQuantity": 99,
       "IsDeleted": false
     },
     {
@@ -68,11 +74,71 @@
       "Description": "27\u0027 Desktop Monitor",
       "Category": "Computers",
       "Price": 2570,
-      "StockQuantity": 6,
+      "StockQuantity": 5,
       "IsDeleted": false
     }
   ],
-  "Orders": [],
-  "Reviews": [],
-  "Payments": []
+  "Orders": [
+    {
+      "Id": "4a687ae1-fd8f-496a-982f-a88af0926771",
+      "CustomerId": "2c72fedf-c159-44da-b66e-c1316dff5e6a",
+      "TotalAmount": 3634.00,
+      "CreatedAt": "2026-03-09T08:41:26.5848963Z",
+      "Status": 4,
+      "Items": [
+        {
+          "ProductId": "9ba427eb-7b7f-4ac8-b52e-afdad3b0252f",
+          "ProductName": "27\u0027 Desktop Monitor",
+          "Quantity": 1,
+          "UnitPrice": 2570
+        },
+        {
+          "ProductId": "5841428e-b69b-4a81-816f-3edea38cdf12",
+          "ProductName": "Desk Chair",
+          "Quantity": 2,
+          "UnitPrice": 320
+        },
+        {
+          "ProductId": "e352a5f7-8ccc-4e84-b9e9-572a7842fd84",
+          "ProductName": "Headphones",
+          "Quantity": 2,
+          "UnitPrice": 199.50
+        },
+        {
+          "ProductId": "6d7fa35c-96af-4380-8bb5-8c49310ded2e",
+          "ProductName": "Water Bottle",
+          "Quantity": 1,
+          "UnitPrice": 25
+        }
+      ]
+    }
+  ],
+  "Reviews": [
+    {
+      "Id": "09dc3a12-d8e6-4f7b-a87b-14da5b9dda69",
+      "ProductId": "9ba427eb-7b7f-4ac8-b52e-afdad3b0252f",
+      "CustomerId": "2c72fedf-c159-44da-b66e-c1316dff5e6a",
+      "Rating": 5,
+      "Comment": "Very Good!!",
+      "CreatedAt": "2026-03-09T08:41:47.6451539Z"
+    },
+    {
+      "Id": "63598d29-2091-4278-8cc8-f71183f06698",
+      "ProductId": "6d7fa35c-96af-4380-8bb5-8c49310ded2e",
+      "CustomerId": "2c72fedf-c159-44da-b66e-c1316dff5e6a",
+      "Rating": 4,
+      "Comment": "Better",
+      "CreatedAt": "2026-03-09T08:41:57.4729064Z"
+    }
+  ],
+  "Payments": [
+    {
+      "Id": "a15c8796-7bba-4be3-9c89-935c55688bee",
+      "OrderId": "4a687ae1-fd8f-496a-982f-a88af0926771",
+      "Amount": 3634.00,
+      "Method": 0,
+      "Status": 1,
+      "PaidAt": "2026-03-09T08:41:26.5854Z"
+    }
+  ]
 }
