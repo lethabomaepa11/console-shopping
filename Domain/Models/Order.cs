@@ -1,3 +1,6 @@
+using ConsoleShoppingApp.Domain.States;
+using ConsoleShoppingApp.Domain;
+
 namespace ConsoleShoppingApp.Domain.Models;
 
 public sealed class Order
@@ -21,15 +24,32 @@ public sealed class Order
         Items = items;
         TotalAmount = totalAmount;
         CreatedAt = createdAt;
-        Status = status;
+        _state = OrderStateFactory.Create(status);
         Payment = payment;
     }
+
+    private IOrderState _state;
 
     public Guid Id { get; }
     public Guid CustomerId { get; }
     public List<OrderItem> Items { get; }
     public decimal TotalAmount { get; }
     public DateTime CreatedAt { get; }
-    public OrderStatus Status { get; set; }
+    public OrderStatus Status => _state.Status;
     public Payment? Payment { get; set; }
+
+    public void TransitionTo(OrderStatus nextStatus)
+    {
+        if (Status == nextStatus)
+        {
+            return;
+        }
+
+        if (!_state.CanTransitionTo(nextStatus))
+        {
+            throw new DomainException($"Invalid order status transition: {Status} -> {nextStatus}.");
+        }
+
+        _state = OrderStateFactory.Create(nextStatus);
+    }
 }

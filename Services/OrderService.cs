@@ -82,7 +82,7 @@ public sealed class OrderService
             _productRepository.Update(product);
         }
 
-        order.Status = OrderStatus.Paid;
+        order.TransitionTo(OrderStatus.Paid);
         _orderRepository.Add(order);
         _store.Payments.Add(payment);
         customer.Cart.Items.Clear();
@@ -115,7 +115,7 @@ public sealed class OrderService
             throw new DomainException("Order not found.");
         }
 
-        order.Status = newStatus;
+        order.TransitionTo(newStatus);
         _orderRepository.Update(order);
         _persistence.Save(_store);
 
