@@ -27,3 +27,6 @@ jobs:
 
     - name: Test
       run: dotnet test console-shopping.csproj --no-build --verbosity normal
+
+    - name: Run Tests
+      run:  dotnet test ./tests/ConsoleShoppingApp.Tests/ConsoleShoppingApp.Tests.csproj -v n
